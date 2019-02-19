@@ -3,7 +3,10 @@ ae_images/
 data/
 pre_trained/
 saved_models/*
+
+# please keep the folder
 !saved_models/.keep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
