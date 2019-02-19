@@ -3,6 +3,7 @@ ae_images/
 data/
 pre_trained/
 saved_models/
+!saved_models/.keep
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
