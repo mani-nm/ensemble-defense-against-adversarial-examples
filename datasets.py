@@ -12,12 +12,46 @@ from torchvision import transforms
 import bird_or_bicycle
 
 
+def imagenet(batch_size, data_root, **kwargs):
+
+    def getclasses(data):
+        classes = os.listdir(data+'/imagenet/val')
+        classes.sort()
+        f = open(data+"/synset_words.txt", "r")
+        synset_to_name = {}
+        for line in f:
+            parts = line.split(" ")
+
+            synset_to_name[parts[0]] = " ".join(parts[1:]).rstrip()
+
+        return synset_to_name
+
+    synset_to_name = getclasses(data_root)
+
+    valdir = os.path.join(data_root, 'imagenet/val')
+    num_workers = kwargs.setdefault('num_workers', 2)
+    kwargs.pop('input_size', None)
+    _normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                      std=[0.229, 0.224, 0.225])
+    val_loader = torch.utils.data.DataLoader(
+        datasets.ImageFolder(valdir, transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            _normalize,
+        ])),
+        batch_size=batch_size, shuffle=False,
+        num_workers=num_workers, pin_memory=True)
+
+    return val_loader, synset_to_name
+
+
 def getBvB(batch_size, data_root='/tmp/public_dataset/pytorch', train=True, test=True, extras=False, **kwargs):
     data_root = bird_or_bicycle.dataset.default_data_root()
     num_workers = kwargs.setdefault('num_workers', 2)
     kwargs.pop('input_size', None)
 
-    _redundant_normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+    _normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                 std=[0.229, 0.224, 0.225])
 
     traindirs = [os.path.join(data_root, partition)
@@ -35,7 +69,7 @@ def getBvB(batch_size, data_root='/tmp/public_dataset/pytorch', train=True, test
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
-            # _redundant_normalize,
+            # _normalize,
         ]))
         for traindir in traindirs]
     if len(train_dataset) == 1:
@@ -52,7 +86,7 @@ def getBvB(batch_size, data_root='/tmp/public_dataset/pytorch', train=True, test
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
-            # _redundant_normalize,
+            # _normalize,
         ])),
         batch_size=batch_size, shuffle=False,
         num_workers=num_workers, pin_memory=True)
@@ -156,7 +190,11 @@ def get_train_test_dataset(dataset, batch_size, dataroot='/tmp/public_dataset/py
     if dataset == 'cifar100':
         train_loader, test_loader = getCIFAR100(batch_size, data_root=dataroot, num_workers=4)
         return train_loader, test_loader
-    if dataset == 'imagenet':
+    if dataset == 'bvb':
         train_loader, val_loader, test_loader = getBvB(batch_size, data_root=dataroot, num_workers=4)
         return train_loader, val_loader, test_loader
+    if dataset == 'imagenet':
+        test_loader, labels_dict = imagenet(batch_size, data_root=dataroot, num_workers=8)
+        return test_loader, labels_dict
+
     return [], []

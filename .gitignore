@@ -2,6 +2,7 @@
 ae_images/
 data/
 pre_trained/
+saved_models/*
 
 # please keep the folder
 !saved_models/.keep
