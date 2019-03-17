@@ -1,8 +1,9 @@
 # Data Folders
-ae_images/
-data/
-pre_trained/
+ae_images/*
+data/*
+pre_trained/*
 saved_models/*
+notebooks/*
 
 # please keep the folder
 !saved_models/.keep
