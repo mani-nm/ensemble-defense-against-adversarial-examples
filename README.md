@@ -1,5 +1,5 @@
-# Adversarial_Examples
-Final Project for attacking and defending Image recognition SOTA deep learning models. This is a working repository with implementation several attack algorithms and defenses. I will be working on improving the code from usability prespective in a few days. Also I plan to release the trained models for both attack and defenses in coming days.
+# Adversarial Examples Attacks and Defenses
+Final Project for attacking and defending Image recognition SOTA deep learning models. This is a working repository with implementation of several adversarial examples attack algorithms and defenses. I will be working on improving the code from usability prespective and will add descrition with image samples from my experiments in a few days. Also I plan to release the trained models for both attack and defenses in coming days.
 ## Disclaimer: This is a personal repository which is a work in progress.
 Attacks Implimented:
 1. Fast Gradient Sign Method (FGSM)
