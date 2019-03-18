@@ -16,6 +16,7 @@ Datasets:
 
 Defenses:
 1. Adversarial retraining
+
 ** Working on more defense mechanisms **
 
 
