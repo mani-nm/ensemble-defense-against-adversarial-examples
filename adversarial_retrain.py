@@ -56,7 +56,7 @@ def train_with_adv_exs(train_loader, model, test_model, criterion, optimizer, ep
     # switch to train mode
     model.train()
     test_model.eval()
-    fgsm = attacks.FGSM()
+    # fgsm = attacks.FGSM()
     bim = attacks.BIM()
     # cw = adversary.cw()
     # df = attacks.DeepFool()
@@ -66,36 +66,46 @@ def train_with_adv_exs(train_loader, model, test_model, criterion, optimizer, ep
         data_time.update(time.time() - end)
         x = x.cuda(non_blocking=True)
         # Online FGSM Attack
-        fgsm_data = fgsm(test_model, x.data.clone(), target.cpu(), 0.01, type='ml')
-        inc_pred_ids_fgsm = get_incorrect_pred_batchs(fgsm_data, target, test_model)
-        fgsm_images = [fgsm_data[i] for i in inc_pred_ids_fgsm]
-        fgsm_images = torch.stack(fgsm_images)  # .squeeze()
-        fgsm_labels = [target[i] for i in inc_pred_ids_fgsm]
-        fgsm_labels = torch.stack(fgsm_labels)  # .squeeze()
-        fgsm_images = fgsm_images.cuda(non_blocking=True)
+        # fgsm_data = fgsm(test_model, x.data.clone(), target.cpu(), 0.02)
+        # inc_pred_ids_fgsm = get_incorrect_pred_batchs(fgsm_data, target, test_model)
+        # fgsm_images = [fgsm_data[i] for i in inc_pred_ids_fgsm]
+        # fgsm_images = torch.stack(fgsm_images)  # .squeeze()
+        # fgsm_labels = [target[i] for i in inc_pred_ids_fgsm]
+        # fgsm_labels = torch.stack(fgsm_labels)  # .squeeze()
+        # fgsm_images = fgsm_images.cuda(non_blocking=True)
+
+        # Online BIM Attack
+        bim_data = bim(test_model, x.data.clone(), target.cpu(), num_classes)
+        inc_pred_ids_bim = get_incorrect_pred_batchs(bim_data, target, test_model)
+        bim_images = [bim_data[i] for i in inc_pred_ids_bim]
+        bim_images = torch.stack(bim_images)  # .squeeze()
+        bim_labels = [target[i] for i in inc_pred_ids_bim]
+        bim_labels = torch.stack(bim_labels)  # .squeeze()
+        bim_images = bim_images.cuda(non_blocking=True)
 
         # Online DF Attack
         # df_data = df(test_model, x.data.clone(), target.cpu(), range(batch_size),
         #              num_classes=10, max_iter=10)
-        df_data = adversary.deepfool(model,images[:16].data.clone(), labels[:16].data.cpu(), num_classes, train_mode=False)
-        inc_pred_ids_df = get_incorrect_pred_batchs(df_data, target, test_model)
-        df_images = [df_data[i] for i in inc_pred_ids_df]
-        df_images = torch.stack(df_images)  # .squeeze()
-        df_labels = [target[i] for i in inc_pred_ids_df]
-        df_labels = torch.stack(df_labels)  # .squeeze()
-        df_images = df_images.cuda(non_blocking=True)
+        # df_data = adversary.deepfool(model,images[:16].data.clone(), labels[:16].data.cpu(),
+        # num_classes, train_mode=False)
+        # inc_pred_ids_df = get_incorrect_pred_batchs(df_data, target, test_model)
+        # df_images = [df_data[i] for i in inc_pred_ids_df]
+        # df_images = torch.stack(df_images)  # .squeeze()
+        # df_labels = [target[i] for i in inc_pred_ids_df]
+        # df_labels = torch.stack(df_labels)  # .squeeze()
+        # df_images = df_images.cuda(non_blocking=True)
 
         # Online CW Attack
-        cw_data = adversary.cw(test_model, x.data.clone(), target.cpu(), 1.0, 'l2')
-        inc_pred_ids_cw = get_incorrect_pred_batchs(cw_data, target, test_model)
-        cw_images = [cw_data[i] for i in inc_pred_ids_cw]
-        cw_images = torch.stack(cw_images)  # .squeeze()
-        cw_labels = [target[i] for i in inc_pred_ids_cw]
-        cw_labels = torch.stack(cw_labels)  # .squeeze()
-        cw_images = cw_images.cuda(non_blocking=True)
+        # cw_data = adversary.cw(test_model, x.data.clone(), target.cpu(), 1.0, 'l2')
+        # inc_pred_ids_cw = get_incorrect_pred_batchs(cw_data, target, test_model)
+        # cw_images = [cw_data[i] for i in inc_pred_ids_cw]
+        # cw_images = torch.stack(cw_images)  # .squeeze()
+        # cw_labels = [target[i] for i in inc_pred_ids_cw]
+        # cw_labels = torch.stack(cw_labels)  # .squeeze()
+        # cw_images = cw_images.cuda(non_blocking=True)
 
-        images = torch.cat((x, fgsm_images, df_images, cw_images), dim=0)
-        labels = torch.cat((target, fgsm_labels, df_labels, cw_labels), dim=0)
+        images = torch.cat((x, bim_images), dim=0)
+        labels = torch.cat((target, bim_labels), dim=0)
         ids = np.arange(images.size()[0])
         np.random.shuffle(ids)
         labels = labels[ids]
@@ -208,10 +218,10 @@ def accuracy(output, target):
         return num_correct.mul_(100.0 / batch_size)
 
 
-def save_checkpoint(state, is_best, filename='saved_models/' + arch + '_checkpoint_cifar10_adv_all_316.pth.tar'):
+def save_checkpoint(state, is_best, filename='saved_models/' + arch + '_checkpoint_cifar10_trial.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'saved_models/' + arch + '_model_cifar10_best_adv_all_316.pth.tar')
+        shutil.copyfile(filename, 'saved_models/' + arch + '_model_cifar10_best_trial.pth.tar')
 
 
 def main():

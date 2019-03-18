@@ -8,21 +8,12 @@
 from __future__ import print_function, division
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
 import numpy as np
-import torchvision
-import torch.nn.functional as F
-from torch.autograd import Variable
-from torchvision import datasets, models, transforms
-from foolbox.models import PyTorchModel
-import matplotlib.pyplot as plt
+from torchvision import datasets, transforms
 import time
 import os
 from datasets import get_train_test_dataset
 import resnet, densenet
-from multiprocessing import Pool
 
 import attacks
 import lib.adversary as adversary
@@ -329,7 +320,7 @@ def run_common_corruption_attack(test_loader, model):
     return adv_examples
 
 
-def run_cw_attack(test_loader, model):
+def run_cw_attack(test_loader, model, num_classes, loss_str='l2'):
     start = time.time()
     total = 0
     correct = 0
@@ -347,7 +338,7 @@ def run_cw_attack(test_loader, model):
             labels = [labels[i] for i in correctly_predicted_ids]
             labels = torch.stack(labels)# .squeeze()
             # print(images.size())
-            adv_data = adversary.cw(model, images.data.clone(), labels.cpu(), 1.0, 'linf') # linf
+            adv_data = adversary.cw(model, images.data.clone(), labels.cpu(), 1.0, loss_str, num_classes) # linf
             correct_ids = get_correct_pred_batchs(adv_data, labels, model)
             correct += len(correct_ids)
 
@@ -388,7 +379,7 @@ def run_fgsm_attack(test_loader, model):
             labels = [labels[i] for i in correctly_predicted_ids]
             labels = torch.stack(labels)# .squeeze()
             # print(images.size())
-            adv_data = df(model, images.data.clone(), labels.cpu(), 0.02, type='ml') # linf
+            adv_data = df(model, images.data.clone(), labels.cpu(), 0.02) # linf
             correct_ids = get_correct_pred_batchs(adv_data, labels, model)
             correct += len(correct_ids)
 
@@ -515,11 +506,11 @@ def main():
     # model_res50 = model_res50.to(device)
 
     ### Adversarial retraining
-    # model_res34 = resnet.ResNet34(10)
-    # chkpoint = torch.load('saved_models/resnet34checkpoint_adv_fgsm_ret_315.pth.tar')
-    # model_res34.load_state_dict(chkpoint['state_dict'])
-    # model_res34.cuda()
-    # test_accuracy(dataloaders, model_res34)
+    res_model = resnet.ResNet34(10)
+    chkpoint = torch.load('saved_models/resnet34_checkpoint_cifar10_cw_bim_317.pth.tar')
+    res_model.load_state_dict(chkpoint['state_dict'])
+    res_model.cuda()
+    test_accuracy(dataloaders, res_model)
 
     # dense_path = os.path.join('pre_trained', 'densenet_cifar.pth')
     # dense_model = densenet.DenseNet121()
@@ -538,10 +529,10 @@ def main():
     # den_model = torch.load(dense_path, map_location=device)
     # dense_model.cuda()
 
-    resnet_path = os.path.join('pre_trained', 'resnet_cifar10.pth')
-    res_model = resnet.ResNet34(num_c=10)
-    res_model.load_state_dict(torch.load(resnet_path, map_location=device))
-    res_model.cuda()
+    # resnet_path = os.path.join('pre_trained', 'resnet_cifar10.pth')
+    # res_model = resnet.ResNet34(num_c=10)
+    # res_model.load_state_dict(torch.load(resnet_path, map_location=device))
+    # res_model.cuda()
     # test_accuracy(dataloaders, res_model)
     # Evaluate the base model : Done for ResNet50
     # base_acc = test_accuracy(dataloaders, model_res50)
@@ -550,70 +541,43 @@ def main():
     # Running FGSM attack
     # print("Running FGSM:\n")
     # advs = run_fgsm_attack(dataloaders, res_model)
+    # print()
     # util.display_images(advs, class_names=classes)
 
     # Running BIM attack
-    # print("Running BIM:\n")
+    # print("Running BIM:")
     # advs = run_bim_attack(dataloaders, res_model, 10)
+    # print()
     # util.display_images(advs, class_names=classes)
 
     # Running ILLC attack
-    # print("Running ILLC:\n")
+    # print("Running ILLC:")
     # advs = run_illc_attack(dataloaders, res_model, 10)
+    # print()
     # util.display_images(advs, class_names=classes)
 
     # Running DeepFool : Done
-    # print("Running DeepFool:\n")
-    # advs = run_deepfool_attack(dataloaders, res_model, 10)
+    print("Running DeepFool:")
+    advs = run_deepfool_attack(dataloaders, res_model, 10)
+    print()
     # util.display_images(advs, class_names=classes)
-    # advs, perts = run_deepfool_attack(dataloaders, res_model, 10)
-    # print("Average Perturbation: {:.02f}".format(perts))
-    # for t, p, _ in advs:
-    #     print("{} predicted as {}".format(dirnm_to_label[class_names[t]], dirnm_to_label[class_names[p.item()]]))
 
     # Running CWL2 attack
-    print("Running CW:\n")
-    advs = run_cw_attack(dataloaders, res_model)
-    # util.display_images(advs, dirnm_to_label, class_names)
+    # print("Running CWL2:")
+    # advs = run_cw_attack(dataloaders, res_model, 10)
+    # print()
+
+    # Running CWLinf attack
+    # print("Running CW Linf:\n")
+    # advs = run_cw_attack(dataloaders, res_model, 10, loss_str='linf')
+    # # util.display_images(advs, class_names=classes)
+    print()
 
 
 
 
-    # mn, mx = 0, 0
-    # i= 0
-    # for img, label in dataloaders:
-    #     print(i)
-    #     np_imgs = img.numpy()
-    #     per_image_min = np.min(np_imgs)
-    #     per_image_max = np.max(np_imgs)
-    #     mn += per_image_min
-    #     mx = per_image_max
-    #     i += 1
-    #     break
-    #
-    # print("Overall min: ", mn)
-    # print("Overall max: ", mx)
-
-    # Running Boundary Attack
-    # testloaders, _, _ = imagenet(batch_size=32, data_root=data_dir, limit=128,
-    #                                                     num_workers=4)  # , limit = 1000
-    #
-    # avdx = run_boundary_attack(dataloaders, testloaders, model_res50)
-    # util.display_images(avdx, dirnm_to_label, class_names)
-
-    # Running common corruptions
-
-    # adx = run_common_corruption_attack(dataloaders, res_model)
-    # util.display_images(adx, dirnm_to_label, class_names)
 
 
-    # Running one_pixel attack
-    # adv = run_one_pixel_attack(dataloaders, res_model)
-    # util.display_images(adv, dirnm_to_label, class_names)
-
-    # Run LBFGS Attack
-    # adv = run_lbfgs_attack(dataloaders, model_res50)
-    # util.display_images(adv, dirnm_to_label, class_names)
 
 
 if __name__ == '__main__':

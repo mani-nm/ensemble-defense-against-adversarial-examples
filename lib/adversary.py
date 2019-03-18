@@ -16,7 +16,7 @@ import torch
 from enum import Enum
 import lib.util as util
 import torch.nn.functional as F
-# import numpy as np
+import numpy as np
 # from lib.transforms import Crop
 # import torch.nn as nn
 # from torch.autograd import Variable
@@ -276,9 +276,7 @@ def universal(model, input, target, n_classes, max_val=0.1, train_mode=False,
 # Implements Carlini-Wagner's L2 and Linf attacks
 # Carlini and Wagner - Towards evaluating the robustness of neural networks
 # Modified with TV minimization, random cropping, and random pixel dropping
-def cw(model, input, target, weight, loss_str, bound=0, tv_weight=0,
-       max_iter=10, step_size=0.01, kappa=0.0, p=2, crop_frac=1.0, drop_rate=0.0,
-       train_mode=False, verbose=False):
+def cw(model, input, target, weight, loss_str, num_classes, max_iter=10, step_size=0.01, kappa=0.0, train_mode=False):
     is_gpu = next(model.parameters()).is_cuda
     if train_mode:
         model.train()
@@ -298,16 +296,18 @@ def cw(model, input, target, weight, loss_str, bound=0, tv_weight=0,
     # scale_down = trans.Resize((int(crop_frac * w.size(2)), int(crop_frac * w.size(3))))
     # to_tensor = trans.ToTensor()
     probs = util.get_probs(model, input)
-    _, top2 = probs.topk(2, 1)
-    # print(top2)
-    argmax = top2[:, 0]
-    # print(top2[:, 0])
-    for j in range(top2.size(0)):
-        if argmax[j] == target[j]:
-            # l = np.random.randint(0,9,1)
-            # if argmax[l] == argmax[j]:
-            #     l = (j+1)//10
-            argmax[j] = top2[j, 1]
+    if loss_str != 'l2':
+        _, top2 = probs.topk(num_classes, 1)
+        argmax = top2[:, 0]
+        for j in range(top2.size(0)):
+            if argmax[j] == target[j]:
+                argmax[j] = top2[j, np.random.randint(1, num_classes-1, 1)]
+    else:
+        _, top2 = probs.topk(2, 1)
+        argmax = top2[:, 0]
+        for j in range(top2.size(0)):
+            if argmax[j] == target[j]:
+                argmax[j] = top2[j, 1]
     for i in range(max_iter):
         if i > 0:
             w.grad.data.fill_(0)

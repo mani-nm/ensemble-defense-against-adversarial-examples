@@ -3,17 +3,10 @@ import numpy as np
 import torch
 import random
 from torch.autograd import Variable
-import tensorflow as tf
-from imagenet_c import corrupt
-import stadv
+# from imagenet_c import corrupt
 import torch.nn.functional as F
 import multiprocessing
-from cleverhans.attacks import SPSA
-from cleverhans.model import Model
 import lib.util as util
-import foolbox
-from foolbox.attacks import BoundaryAttack
-from foolbox.models import PyTorchModel
 from torch.autograd.gradcheck import zero_gradients
 from scipy.optimize import differential_evolution
 
@@ -44,11 +37,10 @@ class FGSM(Attack):
         self.min_pixel = min_pixel
         self.max_pixel = max_pixel
 
-    def __call__(self, model, images, labels, epsilon, type='ml'):
+    def __call__(self, model, images, labels, epsilon):
         model.eval()
         images, labels = images.cuda(), labels.cuda()
-        images, labels = Variable(images, volatile=True), Variable(labels)
-        images.requires_grad = True
+        images, labels = Variable(images, requires_grad=True), Variable(labels)
         output = model(images)
         # _, top_ = output.topk(10, 1)
         # # argmax = torch.tensor(top2[:, 0], requires_grad=True)
@@ -618,29 +610,3 @@ class BoundaryAttackClass(Attack):
 #             i += 1
 #
 #         return x_new
-
-from foolbox.attacks import LBFGSAttack
-from foolbox.criteria import Misclassification
-from foolbox.models import PyTorchModel
-
-
-class LBFGS(Attack):
-    name = "LBFGS"
-
-    def __call__(self, image, label, model):
-        mean = np.array([0.485, 0.456, 0.406]).reshape((3, 1, 1))
-        std = np.array([0.229, 0.224, 0.225]).reshape((3, 1, 1))
-        fmodel = PyTorchModel(model, bounds=(0, 1), num_classes=1000, preprocessing=(mean, std))
-        criterion = Misclassification()
-        attack = LBFGSAttack(fmodel, criterion)
-        images, labels = foolbox.utils.samples('imagenet', )
-        adversarial = attack(image, label=label)
-        return adversarial
-
-
-def get_pred_single(x, model):
-    x = x.cuda()
-    outputs = model(x)
-    _, predicted = torch.max(outputs.data, 1)
-
-    return predicted
