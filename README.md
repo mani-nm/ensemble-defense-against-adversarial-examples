@@ -19,4 +19,4 @@ Defense Method:
 
 If you would like to use and extend my code/research please cite the work as:
 
-    N. Mani, M. Moh and T. Moh, "Towards Robust Ensemble Defense Against Adversarial Examples Attack," 2019 IEEE Global Communications Conference (GLOBECOM),     Waikoloa, HI, USA, 2019, pp. 1-6, doi: 10.1109/GLOBECOM38437.2019.9013408
+**N. Mani, M. Moh and T. Moh, "Towards Robust Ensemble Defense Against Adversarial Examples Attack," 2019 IEEE Global Communications Conference (GLOBECOM),     Waikoloa, HI, USA, 2019, pp. 1-6, doi: 10.1109/GLOBECOM38437.2019.9013408**
