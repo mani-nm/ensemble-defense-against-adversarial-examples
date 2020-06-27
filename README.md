@@ -1,29 +1,22 @@
 # Adversarial Examples Attacks and Defenses
-Final Project for attacking and defending Image recognition SOTA deep learning models. This is a working repository with implementation of several adversarial examples attack algorithms and defenses. I will be working on improving the code from usability prespective and will add descrition with image samples from my experiments in a few days. Also I plan to release the trained models for both attack and defenses in coming days.
-## Disclaimer: This is a personal repository which is a work in progress.
+Research has shown that many state-of-the-art models are vulnerable to attacks by well-crafted adversarial examples. The exposed vulnerabilities of these models raise the question of its usability in safety-critical real-world applications such as autonomous driving and applications in the field of medicine. We present a new ensemble defense strategy using adversarial retraining technique which is capable of withstanding six adversarial attacks on cifar10 dataset with a minimum accuracy of 89.31%. Details of the experiment setup and results were presented in *Globecom 2019* and is published as conference proceedings.
+
+Here is the link to the paper: [Towards Robust Ensemble Defense Against Adversarial Examples Attack](10.1109/GLOBECOM38437.2019.9013408)
+
 Attacks Implimented:
-1. Fast Gradient Sign Method (FGSM)
-2. Basic Iterative Method (BIM)
-3. Iterative Least-Likely Class (ILLC)
-4. DeepFool
-5. Carlini-Wagner (CW) L2
-6. Carlini-Wagner (CW) Linf
 
-Datasets:
-1. cifar10
-2. cifar100
-3. ImageNet (validation set)
+    Fast Gradient Sign Method (FGSM)
+    Basic Iterative Method (BIM)
+    Iterative Least-Likely Class (ILLC)
+    DeepFool
+    Carlini-Wagner (CW) L2
+    Carlini-Wagner (CW) Linf
+    
+Defense Method:
 
-Defenses:
-1. Adversarial retraining
-
-** Working on more defense mechanisms **
+    Ensemble of retrained models with soft voting strategy
 
 
-References:
-1. Goodfellow, Ian J, 2014, Explaining and Harnessing Adversarial Examples
-2. Kurakin, Alexey, 2016, Adversarial examples in the physical world
-3. Moosavi-Dezfooli, Seyed-Mohsen, 2016, Deepfool: a simple and accurate method to fool deep neural networks
-4. Carlini, Nicholas, 2017, Towards evaluating the robustness of neural networks
+If you would like to use and extend my code/research please cite the work as:
 
-
+    N. Mani, M. Moh and T. Moh, "Towards Robust Ensemble Defense Against Adversarial Examples Attack," 2019 IEEE Global Communications Conference (GLOBECOM),     Waikoloa, HI, USA, 2019, pp. 1-6, doi: 10.1109/GLOBECOM38437.2019.9013408
