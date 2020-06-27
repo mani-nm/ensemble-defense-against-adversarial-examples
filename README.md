@@ -1,4 +1,4 @@
-# Adversarial Examples Attacks and Defenses
+# Towards Robust Ensemble Defense Against Adversarial Examples Attack
 Research has shown that many state-of-the-art models are vulnerable to attacks by well-crafted adversarial examples. The exposed vulnerabilities of these models raise the question of its usability in safety-critical real-world applications such as autonomous driving and applications in the field of medicine. We present a new ensemble defense strategy using adversarial retraining technique which is capable of withstanding six adversarial attacks on cifar10 dataset with a minimum accuracy of 89.31%. Details of the experiment setup and results were presented in *Globecom 2019* and is published as conference proceedings.
 
 Here is the link to the paper: [Towards Robust Ensemble Defense Against Adversarial Examples Attack](10.1109/GLOBECOM38437.2019.9013408)
